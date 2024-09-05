@@ -1,0 +1,106 @@
+!pip install catboost
+!pip install rgf_python
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import requests
+from io import StringIO
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVR, NuSVR
+from sklearn.neighbors import KNeighborsRegressor
+from xgboost import XGBRegressor, XGBRFRegressor
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, BayesianRidge
+from sklearn.experimental import enable_hist_gradient_boosting
+from sklearn.ensemble import RandomForestRegressor, StackingRegressor,HistGradientBoostingRegressor, ExtraTreesRegressor
+from sklearn.metrics import mean_absolute_error
+import lightgbm
+from lightgbm import LGBMRegressor
+import catboost
+from catboost import CatBoostRegressor
+from sklearn.cluster import KMeans
+import warnings
+from rgf.sklearn import RGFRegressor
+import re
+
+tourism_train = pd.read_csv("Train.csv")
+tourism_test = pd.read_csv("Test.csv")
+tourism_sample = pd.read_csv("SampleSubmission.csv")
+
+
+tourism_train.shape
+
+
+tourism_train.info()
+from sklearn.model_selection import train_test_split
+
+X_train, X_valid, y_train, y_valid = train_test_split(tourism_train, target, train_size=0.8, test_size=0.2,random_state=0)
+object_cols = [col for col in X_train.columns if X_train[col].dtype == "object"]
+#number of unique entries in each column : categorical data
+object_nunique = list(map(lambda col: X_train[col].nunique(), object_cols))
+d = dict(zip(object_cols, object_nunique))
+
+#number of unique entries by column : ascending order
+sorted(d.items(), key=lambda x: x[1])
+
+low_cardinality_cols = [cname for cname in X_train.columns if X_train[cname].nunique() < 10 and
+                        X_train[cname].dtype == "object"]
+
+numeric_cols = [cname for cname in X_train.columns if X_train[cname].dtype in ['int64', 'float64']]
+
+
+my_cols = low_cardinality_cols + numeric_cols
+X_train = X_train[my_cols].copy()
+X_valid = X_valid[my_cols].copy()
+X_test = tourism_test[my_cols].copy()
+
+X_train = pd.get_dummies(X_train)
+X_valid = pd.get_dummies(X_valid)
+X_test = pd.get_dummies(X_test)
+X_train, X_valid = X_train.align(X_valid, join='left', axis=1)
+X_train, X_test = X_train.align(X_test, join='left', axis=1)
+
+
+from xgboost import XGBRegressor
+
+my_model_1 = XGBRegressor(random_state=0)
+my_model_1.fit(X_train, y_train)
+
+from sklearn.metrics import mean_absolute_error
+
+predictions_1 = my_model_1.predict(X_valid)
+# Calculate MAE
+mae_1 = mean_absolute_error(y_valid, predictions_1)
+print("Mean Absolute Error:" , mae_1)
+
+
+from sklearn.metrics import mean_absolute_error
+
+predictions_1 = my_model_1.predict(X_valid)
+# Calculate MAE
+mae_1 = mean_absolute_error(y_valid, predictions_1)
+print("Mean Absolute Error:" , mae_1)
+
+from sklearn.metrics import mean_absolute_error
+
+my_model_2 = XGBRegressor(colsample_bytree = 0.5354704584999639, gamma = 0.07935676544277769, learning_rate = 0.006026084572900297, max_depth = 5, n_estimators = 570, reg_alpha = 0.013808385936852352, reg_lambda = 5.788648955075587, subsample = 0.7192370615090435)
+
+
+my_model_2.fit(X_train, y_train)
+predictions_2 = my_model_2.predict(X_valid)
+
+
+mae_2 = mean_absolute_error(predictions_2, y_valid)
+print("Mean Absolute Error:" , mae_2)
+
+test_predict = my_model_2.predict(X_test)
+test_predict
+
+
+test_predict = my_model_2.predict(X_test)
+test_predict
+
+
+output.to_csv('submission2.csv', index=False)
